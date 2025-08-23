@@ -3,31 +3,27 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 import {
+  createNetworkConfig,
+  SuiClientProvider,
   WalletProvider,
-  AllDefaultWallets,
-  SuiDevnetChain,
-  SuiTestnetChain,
-  SuiMainnetChain,
-  type Chain,
-  SuietWallet,
-} from "@suiet/wallet-kit";
-import "@suiet/wallet-kit/style.css";
-
-// Support multiple chains to avoid "unknown chain" issues
-const supportedChains: Chain[] = [
-  SuiDevnetChain,
-  SuiTestnetChain,
-  SuiMainnetChain,
-];
+} from "@mysten/dapp-kit";
+import { getFullnodeUrl } from "@mysten/sui/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import "@mysten/dapp-kit/dist/index.css";
+const { networkConfig } = createNetworkConfig({
+  devnet: { url: getFullnodeUrl("devnet") },
+  mainnet: { url: getFullnodeUrl("mainnet") },
+});
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <WalletProvider
-      defaultWallets={[...AllDefaultWallets, SuietWallet]}
-      chains={supportedChains}
-      autoConnect={true} // Optional: auto-connect to previously connected wallet
-    >
-      <App />
-    </WalletProvider>
+    <QueryClientProvider client={queryClient}>
+      <SuiClientProvider networks={networkConfig} defaultNetwork="devnet">
+        <WalletProvider>
+          <App />
+        </WalletProvider>
+      </SuiClientProvider>
+    </QueryClientProvider>
   </StrictMode>
 );
