@@ -5,7 +5,6 @@ use std::string;
 use sui::test_scenario;
 use todo_list::todo_list::{Self, TodoList};
 
-
 #[test]
 fun test_create_todolist() {
     let user = @0xCa;
@@ -13,7 +12,7 @@ fun test_create_todolist() {
 
     {
         let ctx = scenario.ctx();
-        let list = todo_list::new(string::utf8(b"Test"), ctx);
+        let list = todo_list::new(b"Test Todo".to_string(), ctx);
         transfer::public_share_object(list);
     };
 
@@ -22,7 +21,7 @@ fun test_create_todolist() {
         let list = test_scenario::take_shared<TodoList>(&scenario);
 
         assert!(todo_list::length(&list) == 0, 0);
-        assert!(list.name() == b"Test".to_string(), 1);
+        assert!(list.name() == b"Test Todo".to_string(), 1);
 
         test_scenario::return_shared(list);
     };
@@ -33,7 +32,6 @@ fun test_create_todolist() {
 #[test]
 fun add_item_to_todo() {
     let user = @0xCa;
-    let item = string::utf8(b"Item1");
     let mut scenario = test_scenario::begin(user);
 
     {
@@ -45,8 +43,12 @@ fun add_item_to_todo() {
     scenario.next_tx(user);
     {
         let mut list = test_scenario::take_shared<TodoList>(&scenario);
-        todo_list::add(&mut list, item);
-        assert!(todo_list::length(&list) == 1, 0);
+        todo_list::add(&mut list, b"Item 1".to_string());
+        todo_list::add(&mut list, b"Item 2".to_string());
+        todo_list::remove(&mut list, 0);
+
+        assert!(todo_list::length(&list) == 1, 3);
+
         test_scenario::return_shared(list);
     };
 
